@@ -17,6 +17,12 @@
 ;; No splash screen
 (setq inhibit-splash-screen t)
 
+;; Some other stuff
+(require 'autopair)
+(require 'yasnippet)
+(require 'flycheck)
+(global-flycheck-mode t)
+
 ;; Package repo configuration
 ;; Standard package.el + MELPA setup
 ;; (See also: https://github.com/milkypostman/melpa#usage)
@@ -28,24 +34,34 @@
 ;             '("marmalade" . "http://marmalade-repo.org/packages/") t)
 (package-initialize)
 (package-refresh-contents)
-
-(require 'auto-complete)
-(ac-config-default)
-(ac-flyspell-workaround)
-(require 'autopair)
-(require 'yasnippet)
-(require 'flycheck)
-(global-flycheck-mode t)
-
 ;; Auto Package Update
 (require 'auto-package-update)
 
-; auto-complete mode extra settings
+; auto-complete
+(require 'auto-complete)
 (setq
   ac-auto-start 2
   ac-override-local-map nil
   ac-use-menu-map t
   ac-candidate-limit 40)
+(ac-config-default)
+(ac-flyspell-workaround)
+
+;; Truncate the eshell buffer every 5 seconds
+(setq eshell-buffer-maximum-lines 12000)
+(defun eos/truncate-eshell-buffers ()
+  "Truncates all eshell buffers."
+  (interactive)
+  (save-current-buffer
+    (dolist (buffer (buffer-list t))
+      (set-buffer buffer)
+      (when (eq major-mode 'eshell-mode)
+        (eshell-truncate-buffer)))))
+;; After being idle for 5 seconds, truncate all the eshell-buffers if
+;; needed. If this needs to be canceled, you can run `(cancel-timer
+;; eos/eshell-truncate-timer)'
+(setq eos/eshell-truncate-timer
+      (run-with-idle-timer 5 t #'eos/truncate-eshell-buffers))
 
 ;; highlight words
 ;;(add-hook 'prog-mode-hook (lambda () (idle-highlight-mode t)))
