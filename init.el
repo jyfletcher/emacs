@@ -23,6 +23,7 @@
 (require 'package)
 (add-to-list 'package-archives
              '("melpa" . "https://melpa.org/packages/") t)
+(add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
 ;(add-to-list 'package-archives
 ;             '("marmalade" . "http://marmalade-repo.org/packages/") t)
 (package-initialize)
@@ -35,6 +36,9 @@
 (require 'yasnippet)
 (require 'flycheck)
 (global-flycheck-mode t)
+
+;; Auto Package Update
+(require 'auto-package-update)
 
 ; auto-complete mode extra settings
 (setq
@@ -51,8 +55,13 @@
 ;; Note that 'git' must be installed
 (require 'magit)
 
+
 ;; Python mode settings
-;; M-x package-install python-mode
+(setq py-python-command "/usr/bin/python3")
+(defcustom python-shell-interpreter "python3"
+  "Default Python interpreter for shell."
+  :type 'string
+  :group 'python)
 (require 'python-mode)
 (add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
 (setq py-electric-colon-active t)
@@ -60,13 +69,13 @@
 (add-hook 'python-mode-hook 'yas-minor-mode)
 ;(setq py-python-command "python3")
 
-;; jedi settings
+; jedi settings
 (require 'jedi)
 
 ;; Standard Jedi.el setting
 ; This was part of the jedi docs so disabling it until needed
-;(add-hook 'python-mode-hook 'jedi:setup)
-;(setq jedi:complete-on-dot t)
+(add-hook 'python-mode-hook 'jedi:setup)
+(setq jedi:complete-on-dot t)
 
 ;; Type:
 ;;     M-x package-install RET jedi RET
@@ -93,6 +102,7 @@
     (local-set-key (kbd "M-SPC") 'jedi:complete)
     (local-set-key (kbd "M-.") 'jedi:goto-definition)))
     (add-hook 'python-mode-hook 'auto-complete-mode)
+
 
 ;; Monky - like magit but for hg (aka mercurial)
 ;; M-x package-install monky
