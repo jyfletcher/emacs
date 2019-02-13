@@ -1,7 +1,7 @@
-;;; .emacs --- Summary
+;;; init.el --- Summary
 ;; License: Public Domain - https://wiki.creativecommons.org/wiki/Public_domain
 ;;; Commentary:
-;; My .emacs
+;; My Emacs init.el file
 ;;; Code:
 
 ;; Some initial nice things
@@ -258,6 +258,6 @@
 
 
 (provide '.emacs)
-;;; .emacs ends here
+;;; init.el ends here
 
 
