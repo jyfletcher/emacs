@@ -16,6 +16,8 @@
 (setq-default tab-width 4)
 ;; No splash screen
 (setq inhibit-splash-screen t)
+;; Disable the toolbar
+(tool-bar-mode -1)
 
 ;; Some other stuff
 (require 'autopair)
