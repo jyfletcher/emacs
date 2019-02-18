@@ -19,12 +19,6 @@
 ;; Disable the toolbar
 (tool-bar-mode -1)
 
-;; Some other stuff
-(require 'autopair)
-(require 'yasnippet)
-(require 'flycheck)
-(global-flycheck-mode t)
-
 ;; Package repo configuration
 ;; Standard package.el + MELPA setup
 ;; (See also: https://github.com/milkypostman/melpa#usage)
@@ -38,6 +32,12 @@
 (package-refresh-contents)
 ;; Auto Package Update
 (require 'auto-package-update)
+
+;; Some other stuff
+(require 'autopair)
+(require 'yasnippet)
+(require 'flycheck)
+(global-flycheck-mode t)
 
 ; auto-complete
 (require 'auto-complete)
