@@ -19,6 +19,22 @@
 ;; Disable the toolbar
 (tool-bar-mode -1)
 
+;; Move line
+(defun move-line-up ()
+  "Move the current line up."
+  (interactive)
+  (transpose-lines 1)
+  (forward-line -2)
+  (indent-according-to-mode))
+
+(defun move-line-down ()
+  "Move the current line down."
+  (interactive)
+  (forward-line 1)
+  (transpose-lines 1)
+  (forward-line -1)
+  (indent-according-to-mode))
+
 ;; Package repo configuration
 ;; Standard package.el + MELPA setup
 ;; (See also: https://github.com/milkypostman/melpa#usage)
@@ -159,11 +175,14 @@
 (add-hook 'before-save-hook 'gofmt-before-save)
 (add-hook 'go-mode-hook 'yas-minor-mode)
 (defun go-mode-setup ()
+  "Set up go-eldoc."
   (go-eldoc-setup))
 (add-hook 'go-mode-hook 'go-mode-setup)
 (require 'go-autocomplete)
 (require 'go-direx)
 (define-key go-mode-map (kbd "C-c C-k") 'go-direx-pop-to-buffer)
+(define-key go-mode-map (kbd "<M-up>") 'move-line-up)
+(define-key go-mode-map (kbd "<M-down>") 'move-line-down)
 (require 'popwin)
 (setq display-buffer-function 'popwin:display-buffer)
 (push '("^\*go-direx:" :regexp t :position right :width 0.4 :dedicated
@@ -258,6 +277,7 @@
 (add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+
 
 ;; Custom Set Variables -- emacs manages this section
 (custom-set-variables
