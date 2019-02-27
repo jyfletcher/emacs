@@ -65,6 +65,11 @@
 (ac-config-default)
 (ac-flyspell-workaround)
 
+;; Copy as format
+;; M-x package-install copy-as-format
+;; https://github.com/sshaw/copy-as-format/
+(require 'copy-as-format)
+
 ;; Truncate the eshell buffer every 5 seconds
 (setq eshell-buffer-maximum-lines 12000)
 (defun eos/truncate-eshell-buffers ()
@@ -293,7 +298,7 @@
 	("d057f0430ba54f813a5d60c1d18f28cf97d271fd35a36be478e20924ea9451bd" "ec5f697561eaf87b1d3b087dd28e61a2fc9860e4c862ea8e6b0b77bd4967d0ba" default)))
  '(package-selected-packages
    (quote
-	(web-mode org-bullets helm-swoop helm org markdown-mode restclient popwin go-autocomplete go-eldoc zenburn-theme yasnippet yaml-mode python-mode monky magit jedi go-mode flycheck erlang autopair))))
+	(copy-as-format web-mode org-bullets helm-swoop helm org markdown-mode restclient popwin go-autocomplete go-eldoc zenburn-theme yasnippet yaml-mode python-mode monky magit jedi go-mode flycheck erlang autopair))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
