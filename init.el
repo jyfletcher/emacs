@@ -18,6 +18,8 @@
 (setq inhibit-splash-screen t)
 ;; Disable the toolbar
 (tool-bar-mode -1)
+;; Disable the scrollbar
+(toggle-scroll-bar -1)
 
 ;; Move line
 (defun move-line-up ()
