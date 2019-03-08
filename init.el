@@ -20,6 +20,8 @@
 (tool-bar-mode -1)
 ;; Disable the scrollbar
 (toggle-scroll-bar -1)
+;; Keep gconf from overriding config
+(define-key special-event-map [config-changed-event] 'ignore)
 
 ;; Move line
 (defun move-line-up ()
@@ -292,6 +294,8 @@
 (add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
 (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
 
+;;; Load theme
+(load-theme 'zenburn t)
 
 ;; Custom Set Variables -- emacs manages this section
 (custom-set-variables
@@ -315,11 +319,7 @@
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:family "Ubuntu Mono" :foundry "DAMA" :slant normal :weight normal :height 97 :width normal)))))
-
-;;; Load theme
-(load-theme 'zenburn t)
-
+ '(default ((t (:slant normal :weight normal :height 112 :width normal :foundry "DAMA" :family "Ubuntu Mono")))))
 
 (provide '.emacs)
 ;;; init.el ends here
