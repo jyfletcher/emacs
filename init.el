@@ -56,7 +56,8 @@
 ;(add-to-list 'package-archives
 ;             '("marmalade" . "http://marmalade-repo.org/packages/") t)
 (package-initialize)
-(package-refresh-contents)
+;; Run refresh content manually when you need it.  Speeds up startup
+;(package-refresh-contents)
 ;; Auto Package Update
 (require 'auto-package-update)
 
