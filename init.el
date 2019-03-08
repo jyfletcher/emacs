@@ -22,6 +22,10 @@
 (toggle-scroll-bar -1)
 ;; Keep gconf from overriding config
 (define-key special-event-map [config-changed-event] 'ignore)
+;; Set up a personal load path
+;; You can place a default.el file here
+;; that will get parsed after this file
+(push "~/.emacs.d/lisp" load-path)
 
 ;; Move line
 (defun move-line-up ()
