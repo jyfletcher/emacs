@@ -26,6 +26,8 @@
 ;; You can place a default.el file here
 ;; that will get parsed after this file
 (push "~/.emacs.d/lisp" load-path)
+;; Enable global line wrapping
+(global-visual-line-mode)
 
 ;; Move line
 (defun move-line-up ()
