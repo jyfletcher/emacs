@@ -184,7 +184,8 @@
 ;; Go Language
 ;; Download these
 ;; go get -v -u github.com/rogpeppe/godef
-;; go get -v -u github.com/nsf/gocode
+;; Unmaintained, use the next one instead: go get -v -u github.com/nsf/gocode
+;; go get -v -u github.com/mdempsky/gocode
 ;; go get -v -u github.com/jstemmer/gotags
 ;; and M-x package-install these
 ;; go-mode go-eldoc auto-complete go-autocomplete go-direx popwin
@@ -210,7 +211,10 @@
 (setq display-buffer-function 'popwin:display-buffer)
 (push '("^\*go-direx:" :regexp t :position right :width 0.4 :dedicated
 		t :stick t) popwin:special-display-config)
-
+;; Use this until flycheck in melpa supports go1.12
+(let ((govet (flycheck-checker-get 'go-vet 'command)))
+  (when (equal (cadr govet) "tool")
+    (setf (cdr govet) (cddr govet))))
 
 ;; Buffer Move
 ;; M-x package-install buffer-move
