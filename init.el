@@ -79,7 +79,8 @@
   ac-auto-start 2
   ac-override-local-map nil
   ac-use-menu-map t
-  ac-candidate-limit 40)
+  ac-candidate-limit 40
+  ac-dwim t)
 (ac-config-default)
 (ac-flyspell-workaround)
 
@@ -254,6 +255,7 @@
 (require 'org)
 (require 'org-bullets)
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
+(setq org-log-done 'time)
 
 ;;; Helm and Swoop
 ;; Helm - https://github.com/emacs-helm/helm
