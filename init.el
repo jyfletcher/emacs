@@ -232,6 +232,13 @@
   (backward-char 7) )
 (define-key go-mode-map (kbd "C-c f") 'go-quick-function)
 
+(defun go-quick-struct ()
+  "Quickly create a struct skeleton."
+  (interactive)
+  (insert "type  struct {\n\n}")
+  (backward-char 12) )
+(define-key go-mode-map (kbd "C-c s") 'go-quick-struct)
+
 
 ;; Buffer Move
 ;; M-x package-install buffer-move
