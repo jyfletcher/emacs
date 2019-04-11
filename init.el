@@ -217,6 +217,22 @@
   (when (equal (cadr govet) "tool")
     (setf (cdr govet) (cddr govet))))
 
+;; Handy Go commands
+(defun go-quick-import ()
+  "Quickly add an import line."
+  (interactive)
+  (insert "import \"\"")
+  (backward-char 1) )
+(define-key go-mode-map (kbd "C-c i") 'go-quick-import)
+
+(defun go-quick-function ()
+  "Quickly create a function skeleton."
+  (interactive)
+  (insert "func () {\n\n}")
+  (backward-char 7) )
+(define-key go-mode-map (kbd "C-c f") 'go-quick-function)
+
+
 ;; Buffer Move
 ;; M-x package-install buffer-move
 (require 'buffer-move)
