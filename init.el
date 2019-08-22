@@ -64,8 +64,6 @@
 (package-initialize)
 ;; Run refresh content manually when you need it.  Speeds up startup
 ;(package-refresh-contents)
-;; Auto Package Update
-(require 'auto-package-update)
 
 ;; Some other stuff
 (require 'autopair)
