@@ -52,6 +52,34 @@
 (global-set-key (kbd "S-C-p") 'shrink-window)
 (global-set-key (kbd "S-C-n") 'enlarge-window)
 
+;; Specify all packages
+(setq package-list '(autopair
+					 yasnippet
+					 flycheck
+					 auto-complete
+					 copy-as-format
+					 magit
+					 python-mode
+					 jedi
+					 monky
+					 go-mode
+					 go-autocomplete
+					 go-direx
+					 popwin
+					 atomic-chrome
+					 buffer-move
+					 erlang
+					 restclient
+					 yaml-mode
+					 markdown-mode
+					 org
+					 org-bullets
+					 helm
+					 helm-swoop
+					 web-mode
+					 zenburn-theme))
+;; END list of all packages
+
 ;; Package repo configuration
 ;; Standard package.el + MELPA setup
 ;; (See also: https://github.com/milkypostman/melpa#usage)
@@ -62,8 +90,14 @@
 ;(add-to-list 'package-archives
 ;             '("marmalade" . "http://marmalade-repo.org/packages/") t)
 (package-initialize)
-;; Run refresh content manually when you need it.  Speeds up startup
-;(package-refresh-contents)
+;; Refresh package contents if needed
+(or (file-exists-p package-user-dir) (package-refresh-contents))
+
+; install the missing packages
+(dolist (package package-list)
+  (unless (package-installed-p package)
+    (package-install package)))
+
 
 ;; Some other stuff
 (require 'autopair)
