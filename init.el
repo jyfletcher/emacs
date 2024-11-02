@@ -1,10 +1,16 @@
-;;; init.el --- Summary
-;; License: Public Domain - https://wiki.creativecommons.org/wiki/Public_domain
-;;; Commentary:
-;; My Emacs init.el file
-;;; Code:
 
-;; Some initial nice things
+;;;;; Handy things ;;;;;
+;; Fix the tilde, etc keymap issue - https://www.emacswiki.org/emacs/DeadKeys
+(require 'iso-transl)
+;; Present a list of recently opened files
+(recentf-mode 1)
+;; Save minibuffer input history
+(setq history-length 25)
+(savehist-mode 1)
+;; Restore cursor position when opening a file
+(save-place-mode 1)
+;; Update buffer if underlying file changes
+(global-auto-revert-mode 1)
 ;; use shift to move around windows
 (windmove-default-keybindings 'shift)
 (show-paren-mode t)
@@ -16,20 +22,28 @@
 (setq-default tab-width 4)
 ;; No splash screen
 (setq inhibit-splash-screen t)
-;; Set some things when in graphics mode
-(when (display-graphic-p)
-  ;; Disable the toolbar
-  (tool-bar-mode -1)
-  ;; Disable the scrollbar
-  (toggle-scroll-bar -1)
-  ;; Keep gconf from overriding config
-  (define-key special-event-map [config-changed-event] 'ignore))
+;; Disable the toolbar / menu-bar
+(tool-bar-mode -1)
+(menu-bar-mode -1)
+;; Disable the scrollbar
+(toggle-scroll-bar -1)
+(scroll-bar-mode -1)
+;; Keep gconf from overriding config
+(define-key special-event-map [config-changed-event] 'ignore)
 ;; Set up a personal load path
 ;; You can place a default.el file here
 ;; that will get parsed after this file
-(push "~/.emacs.d/lisp" load-path)
+;; Not used this in a while
+;(push "~/.emacs.d/lisp" load-path)
 ;; Enable global line wrapping
 (global-visual-line-mode)
+;; F12 to indent the whole buffer
+(defun indent-buffer ()
+  "Auto-indent buffer."
+  (interactive)
+  (save-excursion
+    (indent-region (point-min) (point-max) nil)))
+(global-set-key [f12] 'indent-buffer)
 
 ;; Move line
 (defun move-line-up ()
@@ -54,260 +68,250 @@
 (global-set-key (kbd "S-C-p") 'shrink-window)
 (global-set-key (kbd "S-C-n") 'enlarge-window)
 
-;; Specify all packages
-(setq package-list '(autopair
-					 yasnippet
-					 flycheck
-					 auto-complete
-					 copy-as-format
-					 magit
-					 python-mode
-					 jedi
-					 monky
-					 go-mode
-					 go-autocomplete
-					 go-direx
-					 popwin
-					 atomic-chrome
-					 buffer-move
-					 erlang
-					 restclient
-					 yaml-mode
-					 markdown-mode
-					 org
-					 org-bullets
-					 helm
-					 helm-swoop
-					 web-mode
-					 zenburn-theme))
-;; END list of all packages
+;; base64url functions
+(defun base64-to-base64url (str)
+  "Convert STR from base64 to base64url encoded."
+  (setq str (replace-regexp-in-string "=+$" "" str))
+  (setq str (replace-regexp-in-string "+" "-" str))
+  (setq str (replace-regexp-in-string "/" "_" str)))
 
-;; Package repo configuration
-;; Standard package.el + MELPA setup
-;; (See also: https://github.com/milkypostman/melpa#usage)
-(require 'package)
-(add-to-list 'package-archives
-             '("melpa" . "https://melpa.org/packages/") t)
-(add-to-list 'package-archives '("org" . "https://orgmode.org/elpa/") t)
-;(add-to-list 'package-archives
-;             '("marmalade" . "http://marmalade-repo.org/packages/") t)
+(defun base64url-to-base64 (str)
+  "Convert STR from base64url encoded to base64."
+  (setq str (replace-regexp-in-string "-" "+" str))
+  (setq str (replace-regexp-in-string "_" "/" str))
+  (let ((mod (% (length str) 4)))
+    (cond
+     ((= mod 1) (concat str "==="))
+     ((= mod 2) (concat str "=="))
+     ((= mod 3) (concat str "="))
+     (t str))))
+
+(defun base64url-encode-string (str)
+  "Convert STR into base64url encoding."
+  (base64-to-base64url (base64-encode-string str t)))
+
+(defun base64url-decode-string (str)
+  "Convert STR from base64url encoded."
+  (base64-decode-string (base64url-to-base64 str)))
+
+
+(defun base64url-decode-region (beg end)
+  "Base64 decode marked region from BEG to END"
+  (interactive "r")
+  (save-excursion
+    (let ((new-text (base64url-decode-string (buffer-substring-no-properties beg end))))
+      (kill-region beg end)
+      (insert new-text))))
+
+(defun base64url-encode-region (beg end)
+  "Base64 encode marked region from BEG to END"
+  (interactive "r")
+  (save-excursion
+    (let ((new-text (base64url-encode-string (buffer-substring-no-properties beg end))))
+      (kill-region beg end)
+      (insert new-text))))
+
+(defun jwt-decode-region (beg end)
+  "Decode JWT in the marked region, from BEG to END."
+  (interactive "r")
+  (save-excursion
+	(setq data (split-string (buffer-substring-no-properties beg end) "\\."))
+	(let ((new-text (string-join (cons (base64url-decode-string (car data))
+						  (list (base64url-decode-string (car (cdr data))))) ",")))
+	  (kill-region beg end)
+	  (insert new-text))))
+
+
+;;; Load up packages
+;; Specify all packages
+(setq my-packages '(
+					company
+					company-quickhelp
+					go-mode
+					helm
+					helm-swoop
+					helm-xref
+					inf-elixir
+					magit
+					markdown-mode
+					mix
+					monky
+					nasm-mode
+					org
+					org-bullets
+					plantuml-mode
+					projectile
+					restclient
+					treesit-auto
+					yaml-mode
+					yasnippet
+					zenburn-theme
+					))
+(setq package-archives '())
+(add-to-list 'package-archives '("elpa" . "http://tromey.com/elpa/") t)
+(add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/") t)
+(add-to-list 'package-archives '("marmalade" . "http://marmalade-repo.org/packages/") t)
+(add-to-list 'package-archives '("melpa" . "https://melpa.org/packages/") t)
+
+; activate all the packages (in particular autoloads)
 (package-initialize)
-;; Refresh package contents if needed
-(or (file-exists-p package-user-dir) (package-refresh-contents))
+
+; fetch the list of packages available 
+(unless package-archive-contents
+  (package-refresh-contents))
 
 ; install the missing packages
-(dolist (package package-list)
+(dolist (package my-packages)
   (unless (package-installed-p package)
     (package-install package)))
 
+;;; Set exec-path and PATH
+(setenv "PATH" (concat (getenv "PATH") ":/home/justin/.local/bin"))
+(setq exec-path (append exec-path '("/home/justin/.local/bin")))
 
-;; Some other stuff
-(require 'autopair)
-(require 'yasnippet)
-(require 'flycheck)
-(global-flycheck-mode t)
+;;; Show lines and columns
+(setq column-number-mode t)
 
-; auto-complete
-(require 'auto-complete)
-(setq
-  ac-auto-start 2
-  ac-override-local-map nil
-  ac-use-menu-map t
-  ac-candidate-limit 40
-  ac-dwim t)
-(ac-config-default)
-(ac-flyspell-workaround)
+;;;;; END handy things ;;;;;
 
-;; Copy as format
-;; M-x package-install copy-as-format
-;; https://github.com/sshaw/copy-as-format/
-(require 'copy-as-format)
+;;;;; tree-sitter things ;;;;;
 
-;; Truncate the eshell buffer every 5 seconds
-(setq eshell-buffer-maximum-lines 12000)
-(defun eos/truncate-eshell-buffers ()
-  "Truncates all eshell buffers."
-  (interactive)
-  (save-current-buffer
-    (dolist (buffer (buffer-list t))
-      (set-buffer buffer)
-      (when (eq major-mode 'eshell-mode)
-        (eshell-truncate-buffer)))))
-;; After being idle for 5 seconds, truncate all the eshell-buffers if
-;; needed. If this needs to be canceled, you can run `(cancel-timer
-;; eos/eshell-truncate-timer)'
-(setq eos/eshell-truncate-timer
-      (run-with-idle-timer 5 t #'eos/truncate-eshell-buffers))
+;;; Set up tree-sitter
 
-;; highlight words
-;;(add-hook 'prog-mode-hook (lambda () (idle-highlight-mode t)))
-
-;; Magit - git support
-;; M-x install-package magit
-;; Note that 'git' must be installed
-(require 'magit)
-
-
-;; Python mode settings
-(setq py-python-command "/usr/bin/python3")
-(defcustom python-shell-interpreter "python3"
-  "Default Python interpreter for shell."
-  :type 'string
-  :group 'python)
-(require 'python-mode)
-(add-to-list 'auto-mode-alist '("\\.py$" . python-mode))
-(setq py-electric-colon-active t)
-(add-hook 'python-mode-hook 'autopair-mode)
-(add-hook 'python-mode-hook 'yas-minor-mode)
-;(setq py-python-command "python3")
-
-; jedi settings
-(require 'jedi)
-
-;; Standard Jedi.el setting
-; This was part of the jedi docs so disabling it until needed
-(add-hook 'python-mode-hook 'jedi:setup)
-(setq jedi:complete-on-dot t)
-
-;; Type:
-;;     M-x package-install RET jedi RET
-;;     M-x jedi:install-server RET
-;; Then open Python file.
-
-;; if you need to change your python intepreter
-;(setq jedi:server-command
-;  '("python3" "/home/dkjuyafl/.emacs.d/elpa/jedi-core-20170121.1410/jediepcserver.py"))
-;(setq jedi:server-args
-;    (list "--sys-path" "/home/justin/Projects/iniscripts/src"))
-;(setq jedi:environment-root "jedi")  ; or any other name you like
-;(setq jedi:environment-virtualenv
-;      (append python-environment-virtualenv
-;              '("--python" "/usr/bin/python3")))
+ ;; Should use:
+ ;; (mapc #'treesit-install-language-grammar (mapcar #'car treesit-language-source-alist))
+ ;; at least once per installation or while changing this list
+(setq treesit-language-source-alist
+  '((heex "https://github.com/phoenixframework/tree-sitter-heex")
+    (elixir "https://github.com/elixir-lang/tree-sitter-elixir")
+	(go "https://github.com/tree-sitter/tree-sitter-go")
+	(python "https://github.com/tree-sitter/tree-sitter-python")
+	(bash "https://github.com/tree-sitter/tree-sitter-bash")
+	(markdown "https://github.com/ikatyang/tree-sitter-markdown")
+	(yaml "https://github.com/ikatyang/tree-sitter-yaml")
+	))
 
 
 
-(add-hook 'python-mode-hook
+;;;;; END tree-sitter things ;;;;;
+
+;;;;; Restclient init ;;;;;
+
+(require 'restclient)
+
+;;;;; END Restclient init ;;;;;
+
+;;;;; elixir config ;;;;;
+
+
+(add-to-list 'major-mode-remap-alist
+ '(elixir-mode . elixir-ts-mode))
+
+;; Set up the elixir language server
+; git clone https://github.com/elixir-lsp/elixir-ls.git
+; cd elixir-ls
+; mix deps.get
+; MIX_ENV=prod mix compile
+; MIX_ENV=prod mix elixir_ls.release -o ~/.local/bin
+
+;;; Set up eglot
+(use-package
+ eglot
+ :ensure t
+ :config (add-to-list 'eglot-server-programs '(elixir-ts-mode "language_server.sh")))
+
+
+;;; Set up elixir-ts-mode
+;; clone these repos
+;; https://github.com/wkirschbaum/elixir-ts-mode
+;; https://github.com/wkirschbaum/heex-ts-mode
+(load "~/.emacs.d/heex-ts-mode/heex-ts-mode.el")
+(load "~/.emacs.d/elixir-ts-mode/elixir-ts-mode.el")
+
+(use-package
+  elixir-ts-mode
+  :ensure t
+ :hook (elixir-ts-mode . eglot-ensure)
+ (elixir-ts-mode
+  .
   (lambda ()
-    (jedi:setup)
-    (jedi:ac-setup)
-    (local-set-key "\C-cd" 'jedi:show-doc)
-    (local-set-key (kbd "M-SPC") 'jedi:complete)
-    (local-set-key (kbd "M-.") 'jedi:goto-definition)))
-    (add-hook 'python-mode-hook 'auto-complete-mode)
+    (push '(">=" . ?\u2265) prettify-symbols-alist)
+    (push '("<=" . ?\u2264) prettify-symbols-alist)
+    (push '("!=" . ?\u2260) prettify-symbols-alist)
+    (push '("==" . ?\u2A75) prettify-symbols-alist)
+    (push '("=~" . ?\u2245) prettify-symbols-alist)
+    (push '("<-" . ?\u2190) prettify-symbols-alist)
+    (push '("->" . ?\u2192) prettify-symbols-alist)
+    (push '("<-" . ?\u2190) prettify-symbols-alist)
+    (push '("|>" . ?\u25B7) prettify-symbols-alist)))
+ (before-save . eglot-format))
+
+;; Set up mix minor mode
+(use-package mix
+  :config
+  (add-hook 'elixir-mode-hook 'mix-minor-mode))
+
+;; Set up inf-elixir
+;; https://github.com/J3RN/inf-elixir
+(use-package inf-elixir
+  :bind (("C-c i i" . 'inf-elixir)
+         ("C-c i p" . 'inf-elixir-project)
+         ("C-c i l" . 'inf-elixir-send-line)
+         ("C-c i r" . 'inf-elixir-send-region)
+         ("C-c i b" . 'inf-elixir-send-buffer)
+         ("C-c i R" . 'inf-elixir-reload-module)))
 
 
-;; Monky - like magit but for hg (aka mercurial)
-;; M-x package-install monky
-(require 'monky)
-(setq monky-process-type 'cmdserver)
 
-;; This is for when you have issues with exec-path not working right
-;; when starting from the GUI (not from a terminal)
-;;
-;; Allow emacs to access and exec from the PATH
-;(defun set-exec-path-from-shell-PATH ()
-;  (let ((path-from-shell (replace-regexp-in-string
-;                          "[ \t\n]*$"
-;                          ""
-;                          (shell-command-to-string "$SHELL --login -i -c 'echo $PATH'"))))
-;    (setenv "PATH" path-from-shell)
-;    (setq eshell-path-env path-from-shell) ; for eshell users
-;    (setq exec-path (split-string path-from-shell path-separator))))
-;(when window-system (set-exec-path-from-shell-PATH))
+;;;;; END elxir things ;;;;;
 
+;;;;; Erlang things ;;;;;
 
-;; Go Language
-;; Download these
-;; go get -v -u github.com/rogpeppe/godef
-;; Unmaintained, use the next one instead: go get -v -u github.com/nsf/gocode
-;; go get -v -u github.com/mdempsky/gocode
-;; go get -v -u github.com/jstemmer/gotags
-;; and M-x package-install these
-;; go-mode go-eldoc auto-complete go-autocomplete go-direx popwin
-;; and 'eval' these commands (with GOPATH set properly)
-;; or else the bins downloaded above will not be useful
-;; (setenv "GOPATH" "/home/user/Projects/mygoproject")
-;; (setenv "PATH" (concat (getenv "GOPATH") "/bin" path-separator (getenv "PATH")))
-;; (add-to-list 'exec-path (concat (getenv "GOPATH") "/bin"))
-(require 'go-mode)
-;(add-to-list 'exec-path "/home/dkjuyafl/opt/go/bin")
-(add-hook 'before-save-hook 'gofmt-before-save)
-(add-hook 'go-mode-hook 'yas-minor-mode)
-(defun go-mode-setup ()
-  "Set up go-eldoc."
-  (go-eldoc-setup))
-(add-hook 'go-mode-hook 'go-mode-setup)
-(require 'go-autocomplete)
-(require 'go-direx)
-(define-key go-mode-map (kbd "C-c C-k") 'go-direx-pop-to-buffer)
-(define-key go-mode-map (kbd "<M-up>") 'move-line-up)
-(define-key go-mode-map (kbd "<M-down>") 'move-line-down)
-(require 'popwin)
-(setq display-buffer-function 'popwin:display-buffer)
-(push '("^\*go-direx:" :regexp t :position right :width 0.4 :dedicated
-		t :stick t) popwin:special-display-config)
-;; Use this until flycheck in melpa supports go1.12
-(let ((govet (flycheck-checker-get 'go-vet 'command)))
-  (when (equal (cadr govet) "tool")
-    (setf (cdr govet) (cddr govet))))
-
-;; Handy Go commands
-(defun go-quick-import ()
-  "Quickly add an import line."
-  (interactive)
-  (insert "import \"\"\n")
-  (backward-char 2) )
-(define-key go-mode-map (kbd "C-c i") 'go-quick-import)
-
-(defun go-quick-function ()
-  "Quickly create a function skeleton."
-  (interactive)
-  (insert "func () {\n\n}\n")
-  (backward-char 8) )
-(define-key go-mode-map (kbd "C-c f") 'go-quick-function)
-
-(defun go-quick-struct ()
-  "Quickly create a struct skeleton."
-  (interactive)
-  (insert "type  struct {\n\n}\n")
-  (backward-char 13) )
-(define-key go-mode-map (kbd "C-c s") 'go-quick-struct)
-
-;; Atomic Chrome
-;; M-x package-install atomic-chrome
-(require 'atomic-chrome)
-(atomic-chrome-start-server)
-
-;; Buffer Move
-;; M-x package-install buffer-move
-(require 'buffer-move)
-(global-set-key (kbd "<C-S-up>")     'buf-move-up)
-(global-set-key (kbd "<C-S-down>")   'buf-move-down)
-(global-set-key (kbd "<C-S-left>")   'buf-move-left)
-(global-set-key (kbd "<C-S-right>")  'buf-move-right)
-
-
-;; Erlang mode
-;; M-x package-install erlang
+(setq load-path (cons  "/usr/local/lib/erlang26/lib/tools-3.6/emacs" load-path))
+(setq erlang-root-dir "/usr/local/lib/erlang26/lib/")
+;(setq exec-path (cons "/usr/local/otp/bin" exec-path))
 (require 'erlang-start)
 
-;; Restclient
-;; M-x package-install restclient
-(require 'restclient)
-(add-to-list 'auto-mode-alist '("\\.rest$" . restclient-mode))
+;;;;; END Erlang things ;;;;;
 
+;;;; Comany mode things ;;;;;
+;;(use-package company
+;;  :hook (elixir-ts-mode . company-mode))
+(add-hook 'after-init-hook 'global-company-mode)
+(company-quickhelp-mode)
+;;;; End Company things
 
-;; YaML
-;; M-x package-install yaml-mode
-(require 'yaml-mode)
-(add-hook 'yaml-mode-hook
+;;;; Go things ;;;;
+;; Optional: load other packages before eglot to enable eglot integrations.
+(require 'company)
+(require 'yasnippet)
+(require 'project)
+(require 'go-mode)
+(require 'eglot)
+(add-hook 'go-mode-hook 'eglot-ensure)
+
+;; Optional: install eglot-format-buffer as a save hook.
+;; The depth of -10 places this before eglot's willSave notification,
+;; so that that notification reports the actual contents that will be saved.
+(defun eglot-format-buffer-before-save ()
+  (add-hook 'before-save-hook #'eglot-format-buffer -10 t))
+(add-hook 'go-mode-hook #'eglot-format-buffer-before-save)
+
+(setq-default eglot-workspace-configuration
+    '((:gopls .
+        ((staticcheck . t)
+         (matcher . "CaseSensitive")))))
+
+(add-hook 'before-save-hook
     (lambda ()
-        (define-key yaml-mode-map "\C-m" 'newline-and-indent)))
-(add-to-list 'auto-mode-alist '("\\.sls\\'" . yaml-mode))
+        (call-interactively 'eglot-code-action-organize-imports))
+    nil t)
 
-;; Markdown
-;; M-x package-install markdown-mode
-(require 'markdown-mode)
+;;;; END Go things ;;;;
+
+
+;;;;; Package config ;;;;;
+(require 'magit)
 
 ;; OrgMode
 ;; https://orgmode.org
@@ -318,13 +322,15 @@
 (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1)))
 (setq org-log-done 'time)
 (setq org-ellipsis " ▼")
+(setq org-plantuml-jar-path (expand-file-name "/usr/share/plantuml/plantuml.jar"))
+(add-to-list 'org-src-lang-modes '("plantuml" . plantuml))
+(org-babel-do-load-languages 'org-babel-load-languages '((plantuml . t)))
 
 ;;; Helm and Swoop
 ;; Helm - https://github.com/emacs-helm/helm
 ;; Swoop - https://github.com/ShingoFukuyama/helm-swoop
 ;; M-x package-install helm
 ;; M-x package-install helm-swoop
-(require 'helm-config)
 (require 'helm-swoop)
 (global-set-key (kbd "M-x") #'helm-M-x)
 (global-set-key (kbd "C-x r b") #'helm-filtered-bookmarks)
@@ -332,7 +338,8 @@
 (global-set-key (kbd "C-x b") #'helm-mini)
 (global-set-key (kbd "C-x C-b") #'helm-buffers-list)
 				
-(helm-mode 1)
+(helm-mode)
+(require 'helm-xref)
 ;; Swoop keybinds
 (global-set-key (kbd "M-i") 'helm-swoop)
 (global-set-key (kbd "M-I") 'helm-swoop-back-to-last-point)
@@ -355,48 +362,28 @@
 (define-key helm-multi-swoop-map (kbd "C-r") 'helm-previous-line)
 (define-key helm-multi-swoop-map (kbd "C-s") 'helm-next-line)
 
-
-;; Web Mode
-;; M-x package-install web-mode
-;; https://github.com/sabof/org-bullets
-(require 'web-mode)
-(add-to-list 'auto-mode-alist '("\\.phtml\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.tpl\\.php\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.[agj]sp\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.as[cp]x\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.erb\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.mustache\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.djhtml\\'" . web-mode))
-(add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
-
-;;; Load theme
+;; eshell-helm
+(add-hook 'eshell-mode-hook
+	  (lambda ()
+	    (eshell-cmpl-initialize)
+	    (define-key eshell-mode-map [remap eshell-pcomplete] 'helm-esh-pcomplete)
+	    (define-key eshell-mode-map (kbd "C-c f") 'helm-eshell-prompts-all)
+	    (define-key eshell-mode-map (kbd "M-r") 'helm-eshell-history)))
+;; Load theme
 (load-theme 'zenburn t)
 
-;; Custom Set Variables -- emacs manages this section
+;; Set font
+(set-frame-font "Hack 8" nil t)
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(ansi-color-faces-vector
-   [default default default italic underline success warning error])
- '(custom-enabled-themes (quote (zenburn)))
- '(custom-safe-themes
-   (quote
-	("d057f0430ba54f813a5d60c1d18f28cf97d271fd35a36be478e20924ea9451bd" "ec5f697561eaf87b1d3b087dd28e61a2fc9860e4c862ea8e6b0b77bd4967d0ba" default)))
  '(package-selected-packages
-   (quote
-	(copy-as-format web-mode org-bullets helm-swoop helm org markdown-mode restclient popwin go-autocomplete go-eldoc zenburn-theme yasnippet yaml-mode python-mode monky magit jedi go-mode flycheck erlang autopair)))
- '(show-paren-mode t)
- '(tool-bar-mode nil))
+   '(inf-elixir mix monky cmake-mode zenburn-theme yaml-mode restclient projectile plantuml-mode org-bullets markdown-mode magit helm-xref helm-swoop company)))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(default ((t (:slant normal :weight normal :height 112 :width normal :foundry "DAMA" :family "Ubuntu Mono")))))
-
-(provide '.emacs)
-;;; init.el ends here
-
-
+ )

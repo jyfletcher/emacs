@@ -1,4 +1,4 @@
 # emacs
 Emacs config
 
-Copy this file into ~/.emacs.d/
+Copy ``init.el`` into ~/.emacs.d/
