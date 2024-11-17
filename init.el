@@ -141,6 +141,7 @@
 					org-bullets
 					plantuml-mode
 					projectile
+					raku-mode
 					restclient
 					treesit-auto
 					yaml-mode
@@ -200,6 +201,14 @@
 (require 'restclient)
 
 ;;;;; END Restclient init ;;;;;
+
+;;;;; Raku config ;;;;;
+
+(use-package raku-mode
+  :ensure t
+  :defer t)
+
+;;;;; END Raku config ;;;;;
 
 ;;;;; elixir config ;;;;;
 
@@ -308,6 +317,13 @@
     nil t)
 
 ;;;; END Go things ;;;;
+
+;;;;; Python things ;;;;;;
+
+(add-hook 'python-mode-hook 'eglot-ensure)
+
+
+;;;;; END Python things ;;;;;
 
 
 ;;;;; Package config ;;;;;
